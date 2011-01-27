@@ -13,6 +13,11 @@ class RobotDemo : public SimpleRobot
 	Joystick *rightstick; // only joystick
 	Relay *k_relay; // only relay
 	Compressor *C1; // Compressor
+	Solenoid *soy[2]; //sauce 
+	AxisCamera *camera; //Cameralol(: 
+	HSLImage *image;
+	int piston_position; // 0 down, 1 up
+	
 
 public:
 	RobotDemo(void)
@@ -22,14 +27,17 @@ public:
 		rightstick = new Joystick(2);		// as they are declared above.
 		k_relay = new Relay(2,Relay::kForwardOnly);
 		C1 = new Compressor(4,2);
+		soy[0]= new Solenoid(1);
+		soy[1]= new Solenoid(4);
+		piston_position = 0;
 
 		myRobot->SetExpiration(0.1);
 		SmartDashboard::init();
 		SmartDashboard::Log("initializing...", "System State");
 		
-		AxisCamera &camera = AxisCamera::GetInstance();
-		camera.WriteResolution(AxisCameraParams::kResolution_160x120);
-		camera.WriteBrightness(0);
+		camera = &AxisCamera::GetInstance();
+		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
+		camera->WriteBrightness(0);
 		Wait(3.0);
 	}
 
@@ -43,6 +51,11 @@ public:
 		myRobot->Drive(0.1, 0.0); 	// drive forwards tenth speed
 		Wait(1.0); 				//    for 1 seconds
 		myRobot->Drive(0.0, 0.0); 	// stop robot
+		
+		image = camera->GetImage();
+		
+		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
+		BinaryImage *pinkPixels = image->ThresholdHSL(pinkThreshold);
 	}
 
 	/**
@@ -70,7 +83,8 @@ public:
 				//k_relay->Set(Relay::kOff);
 			}
 			
-			DriverStationEnhancedIO& controller_box = (DriverStation::GetInstance()->GetEnhancedIO());
+			DriverStationEnhancedIO &controller_box = 
+				DriverStation::GetInstance()->GetEnhancedIO();
 			if (controller_box.GetDigital(3))
 				{    
 					C1-> Start();	
@@ -80,11 +94,53 @@ public:
 				{
 					C1-> Stop();
 				}
+			
+			if (controller_box.GetDigital(4)) //4 is the Solenoid switcherrooo thinggyyy 
+							{    
+								piston_up();	
+								//makes piston go upp
+							}
+						else
+							{
+								piston_down();
+								//makes piston go down down down down down 
+							}
+			
 		}
 		
 		
 	}
+
+	void piston_up(void)
+	{
+		if(piston_position == 0)
+		{
+			soy[0]->Set (true);
+			soy[1]->Set (false);
+			Wait(0.1);
+			soy[0]->Set (false);
+			soy[1]->Set (false);
+			piston_position = 1;
+		}
+	}
+
+	void piston_down(void)
+	{
+		if(piston_position == 1)
+		{
+			soy[0]->Set (false);
+			soy[1]->Set (true);
+			Wait(0.1);
+			soy[0]->Set (false);
+			soy[1]->Set (false);
+			piston_position = 0;
+		}
+
+	}
 };
+
+
+
 
 START_ROBOT_CLASS(RobotDemo);
 
