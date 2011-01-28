@@ -17,6 +17,7 @@ class RobotDemo : public SimpleRobot
 	AxisCamera *camera; //Cameralol(: 
 	HSLImage *image;
 	int piston_position; // 0 down, 1 up
+	DigitalInput *digimon; // Digitial Input 
 	
 
 public:
@@ -30,14 +31,15 @@ public:
 		soy[0]= new Solenoid(1);
 		soy[1]= new Solenoid(4);
 		piston_position = 0;
+		digimon = new DigitalInput(4, 12);
 
 		myRobot->SetExpiration(0.1);
 		SmartDashboard::init();
 		SmartDashboard::Log("initializing...", "System State");
 		
-		camera = &AxisCamera::GetInstance();
-		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
-		camera->WriteBrightness(0);
+		//camera = &AxisCamera::GetInstance();
+		//camera->WriteResolution(AxisCameraParams::kResolution_160x120);
+		//camera->WriteBrightness(0);
 		Wait(3.0);
 	}
 
@@ -52,10 +54,10 @@ public:
 		Wait(1.0); 				//    for 1 seconds
 		myRobot->Drive(0.0, 0.0); 	// stop robot
 		
-		image = camera->GetImage();
+		//image = camera->GetImage();
 		
-		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
-		BinaryImage *pinkPixels = image->ThresholdHSL(pinkThreshold);
+		//Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
+		//BinaryImage *pinkPixels = image->ThresholdHSL(pinkThreshold);
 	}
 
 	/**
@@ -73,13 +75,13 @@ public:
 			
 			if (leftstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
 			{	
-				SmartDashboard::Log("Yes", "Trigger Pressed");
+				//SmartDashboard::Log("Yes", "Trigger Pressed");
 				//k_relay->Set(Relay::kOn);
 				
 			}
 			else 
 			{
-				SmartDashboard::Log("No", "Trigger Pressed");
+				//SmartDashboard::Log("No", "Trigger Pressed");
 				//k_relay->Set(Relay::kOff);
 			}
 			
@@ -106,9 +108,17 @@ public:
 								//makes piston go down down down down down 
 							}
 			
+			if (digimon->Get() == 1)
+				{
+					SmartDashboard::Log("1", "DigitalLight");
+				}
+			else
+				{
+					SmartDashboard::Log("0", "DigitalLight");
+				}
 		}
 		
-		
+				
 	}
 
 	void piston_up(void)
@@ -117,7 +127,7 @@ public:
 		{
 			soy[0]->Set (true);
 			soy[1]->Set (false);
-			Wait(0.1);
+			Wait(0.03);
 			soy[0]->Set (false);
 			soy[1]->Set (false);
 			piston_position = 1;
@@ -130,13 +140,17 @@ public:
 		{
 			soy[0]->Set (false);
 			soy[1]->Set (true);
-			Wait(0.1);
+			Wait(0.03);
 			soy[0]->Set (false);
 			soy[1]->Set (false);
 			piston_position = 0;
 		}
 
 	}
+	
+		
+		
+	
 };
 
 
