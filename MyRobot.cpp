@@ -18,6 +18,7 @@ class RobotDemo : public SimpleRobot
 	HSLImage *image;
 	int piston_position; // 0 down, 1 up
 	DigitalInput *digimon; // Digitial Input 
+	Encoder *encoder;
 	
 
 public:
@@ -32,6 +33,7 @@ public:
 		soy[1]= new Solenoid(4);
 		piston_position = 0;
 		digimon = new DigitalInput(4, 12);
+		encoder = new Encoder(4,1,4,2,true);
 
 		myRobot->SetExpiration(0.1);
 		SmartDashboard::init();
@@ -110,15 +112,14 @@ public:
 			
 			if (digimon->Get() == 1)
 				{
-					SmartDashboard::Log("1", "DigitalLight");
+					//SmartDashboard::Log("1", "DigitalLight");
 				}
 			else
 				{
-					SmartDashboard::Log("0", "DigitalLight");
+					//SmartDashboard::Log("0", "DigitalLight");
 				}
+			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");
 		}
-		
-				
 	}
 
 	void piston_up(void)
