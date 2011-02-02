@@ -6,7 +6,7 @@
  * Autonomous and OperatorControl methods at the right time as controlled by the switches on
  * the driver station or the field controls.
  */ 
-class RobotDemo : public SimpleRobot
+class RobotDemo : public SimpleRobot //DECLARING
 {
 	RobotDrive *myRobot; // robot drive system
 	Joystick *leftstick; // only joystick
@@ -20,11 +20,12 @@ class RobotDemo : public SimpleRobot
 	DigitalInput *digimon; // Digitial Input 
 	Encoder *encoder;
 	
+	
 
 public:
-	RobotDemo(void)
+	RobotDemo(void) //CREATING
 	{
-		myRobot = new RobotDrive(1, 2, 3, 4);	// these must be initialized in the same order
+		myRobot = new RobotDrive(1, 3, 2, 4);// these must be initialized in the same order
 		leftstick = new Joystick(1);		// as they are declared above.
 		rightstick = new Joystick(2);		// as they are declared above.
 		k_relay = new Relay(2,Relay::kForwardOnly);
@@ -34,13 +35,17 @@ public:
 		piston_position = 0;
 		digimon = new DigitalInput(4, 12);
 		encoder = new Encoder(4,1,4,2,true);
-
+		
+		myRobot->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);
+		myRobot->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
+		
+		
 		myRobot->SetExpiration(0.1);
 		SmartDashboard::init();
 		SmartDashboard::Log("initializing...", "System State");
 		
-		//camera = &AxisCamera::GetInstance();
-		//camera->WriteResolution(AxisCameraParams::kResolution_160x120);
+		camera = &AxisCamera::GetInstance();
+		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
 		//camera->WriteBrightness(0);
 		Wait(3.0);
 	}
@@ -52,9 +57,9 @@ public:
 	{
 		SmartDashboard::Log("Autonomous", "System State");
 		myRobot->SetSafetyEnabled(false);
-		myRobot->Drive(0.1, 0.0); 	// drive forwards tenth speed
+		//myRobot->Drive(0.1, 0.0); 	// drive forwards tenth speed
 		Wait(1.0); 				//    for 1 seconds
-		myRobot->Drive(0.0, 0.0); 	// stop robot
+		//myRobot->Drive(0.0, 0.0); 	// stop robot
 		
 		//image = camera->GetImage();
 		
@@ -71,8 +76,11 @@ public:
 		myRobot->SetSafetyEnabled(true);
 		while (IsOperatorControl())
 		{
-			myRobot->TankDrive(leftstick, rightstick);
-		//	myRobot.ArcadeDrive(stick); // drive with arcade style (use right stick)
+			
+			
+			//myRobot->TankDrive(leftstick, rightstick);
+			myRobot->MecanumDrive_Polar(rightstick->GetMagnitude(),rightstick->GetDirectionDegrees(),leftstick->GetX());
+			//	myRobot.ArcadeDrive(stick); // drive with arcade style (use right stick)
 			Wait(0.005);				// wait for a motor update time
 			
 			if (leftstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
@@ -120,6 +128,7 @@ public:
 				}
 			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");
 		}
+		
 	}
 
 	void piston_up(void)
