@@ -1,0 +1,4 @@
+**/*.out
+**/*.o
+PPC603gnu/SimpleTemplate/Debug/SimpleTemplate.out
+
