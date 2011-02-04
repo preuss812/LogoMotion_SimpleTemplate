@@ -1,5 +1,5 @@
 #include "WPILib.h"
-#include "Vision2009/TrackAPI.h"
+
 /**
  * This is a demo program showing the use of the RobotBase class.
  * The SimpleRobot class is the base of a robot application that will automatically call your
@@ -15,7 +15,7 @@ class RobotDemo : public SimpleRobot //DECLARING
 	Compressor *C1; // Compressor
 	Solenoid *soy[2]; //sauce 
 	AxisCamera *camera; //Cameralol(: 
-	HSLImage *image;
+	HSLImage *hslimage;
 	int piston_position; // 0 down, 1 up
 	DigitalInput *digimon; // Digitial Input 
 	Encoder *encoder;
@@ -61,24 +61,8 @@ public:
 		Wait(1.0); 				//    for 1 seconds
 		//myRobot->Drive(0.0, 0.0); 	// stop robot
 		
-		TrackingThreshold tdata = GetTrackingData(BLUE, FLUORESCENT);
-		ParticleAnalysisReport par;
-		
-		SmartDashboard::Log("Just before", "FindColor");
-		int i;
-		if ( (i=FindColor (IMAQ_HSL, &tdata.hue, &tdata.saturation, &tdata.luminance, &par)))
-		{
-			SmartDashboard::Log(par.center_mass_x_normalized, "Center of X");
-			SmartDashboard::Log(par.center_mass_y_normalized, "Center of Y");
-		} else {
-			SmartDashboard::Log(i, "FindColor return value");
-		}
-		SmartDashboard::Log("Just after", "FindColor");
 
-		//image = camera->GetImage();
 		
-		//Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
-		//BinaryImage *pinkPixels = image->ThresholdHSL(pinkThreshold);
 	}
 
 	/**
@@ -88,10 +72,29 @@ public:
 	{
 		SmartDashboard::Log("Teleoperated", "System State");
 		myRobot->SetSafetyEnabled(true);
+		vector<ParticleAnalysisReport>* pars;
+		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
+		BinaryImage *pinkPixels;
+		ParticleAnalysisReport par; 
 		while (IsOperatorControl())
 		{
 			
+			hslimage = camera->GetImage();
 			
+			
+			
+			pinkPixels = hslimage->ThresholdHSL(pinkThreshold);
+			
+			pars = pinkPixels->GetOrderedParticleAnalysisReports();
+			if (pars->size() > 0)
+			{
+				par = (*pars)[0];
+				SmartDashboard::Log(par.center_mass_x, "center of mass x");
+				SmartDashboard::Log(par.center_mass_y, "center of mass y");
+			}
+			pars->clear();
+			delete pars;
+				
 			//myRobot->TankDrive(leftstick, rightstick);
 			myRobot->MecanumDrive_Polar(rightstick->GetMagnitude(),rightstick->GetDirectionDegrees(),leftstick->GetX());
 			//	myRobot.ArcadeDrive(stick); // drive with arcade style (use right stick)
