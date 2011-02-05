@@ -14,11 +14,11 @@ class RobotDemo : public SimpleRobot //DECLARING
 	Relay *k_relay; // only relay
 	Compressor *C1; // Compressor
 	Solenoid *soy[2]; //sauce 
-	AxisCamera *camera; //Cameralol(: 
-	HSLImage *hslimage;
+
 	int piston_position; // 0 down, 1 up
 	DigitalInput *digimon; // Digitial Input 
 	Encoder *encoder;
+	Task *myTask;
 
 public:
 	RobotDemo(void) //CREATING
@@ -41,9 +41,11 @@ public:
 		SmartDashboard::init();
 		SmartDashboard::Log("initializing...", "System State");
 
-		camera = &AxisCamera::GetInstance();
-		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
+		
 		//camera->WriteBrightness(0);
+		
+		myTask = new Task("Camerastuff",(FUNCPTR)&Camerastuff);
+		
 		Wait(3.0);
 	}
 
@@ -60,31 +62,56 @@ public:
 
 	}
 
+	
+	static void Camerastuff()
+	{
+		AxisCamera *camera; //Cameralol (: 
+		HSLImage *hslimage;
+		vector<ParticleAnalysisReport>* pars;
+		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
+		BinaryImage *pinkPixels;
+		ParticleAnalysisReport par;
+		
+		camera = &AxisCamera::GetInstance();
+		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
+		
+		while (1)
+		{
+			
+		hslimage = camera->GetImage();
+
+		pinkPixels = hslimage->ThresholdHSL(pinkThreshold);
+		pars = pinkPixels->GetOrderedParticleAnalysisReports();
+		if (pars->size() > 0)
+		{
+			par = (*pars)[0];
+			SmartDashboard::Log(par.center_mass_x, "center of mass x");
+			SmartDashboard::Log(par.center_mass_y, "center of mass y");
+		}
+			pars->clear();
+			delete pars;
+					
+			delete pinkPixels;
+			delete hslimage;
+		}
+
+	}
+	
+	
 	/**
 	 * Runs the motors with arcade steering. 
 	 */
 	void OperatorControl(void) {
 		SmartDashboard::Log("Teleoperated", "System State");
 		myRobot->SetSafetyEnabled(true);
-		vector<ParticleAnalysisReport>* pars;
-		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
-		BinaryImage *pinkPixels;
-		ParticleAnalysisReport par;
-		while (IsOperatorControl()) {
+		
+		
+		myTask->Start();
 
-			hslimage = camera->GetImage();
+		while (IsOperatorControl()) 
+		{
 
-			pinkPixels = hslimage->ThresholdHSL(pinkThreshold);
-
-			pars = pinkPixels->GetOrderedParticleAnalysisReports();
-			if (pars->size() > 0) {
-				par = (*pars)[0];
-				SmartDashboard::Log(par.center_mass_x, "center of mass x");
-				SmartDashboard::Log(par.center_mass_y, "center of mass y");
-			}
-			pars->clear();
-			delete pars;
-
+			
 			//myRobot->TankDrive(leftstick, rightstick);
 			myRobot->MecanumDrive_Polar(rightstick->GetMagnitude(),
 					rightstick->GetDirectionDegrees(), leftstick->GetX());
@@ -125,7 +152,7 @@ public:
 				//SmartDashboard::Log("0", "DigitalLight");
 			}
 			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");
-		}
+		} 
 
 	}
 
