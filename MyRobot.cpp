@@ -68,8 +68,8 @@ public:
 		AxisCamera *camera; //Cameralol (: 
 		HSLImage *hslimage;
 		vector<ParticleAnalysisReport>* pars;
-		Threshold pinkThreshold(226, 255, 28, 255, 96, 255);
-		BinaryImage *pinkPixels;
+		Threshold tapeThreshold(43, 44, 250, 255, 96, 255);
+		BinaryImage *tapePixels;
 		ParticleAnalysisReport par;
 		
 		camera = &AxisCamera::GetInstance();
@@ -80,8 +80,8 @@ public:
 			
 		hslimage = camera->GetImage();
 
-		pinkPixels = hslimage->ThresholdHSL(pinkThreshold);
-		pars = pinkPixels->GetOrderedParticleAnalysisReports();
+		tapePixels = hslimage->ThresholdHSL(tapeThreshold);
+		pars = tapePixels->GetOrderedParticleAnalysisReports();
 		if (pars->size() > 0)
 		{
 			par = (*pars)[0];
@@ -91,7 +91,7 @@ public:
 			pars->clear();
 			delete pars;
 					
-			delete pinkPixels;
+			delete tapePixels;
 			delete hslimage;
 		}
 
