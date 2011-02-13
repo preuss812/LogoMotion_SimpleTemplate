@@ -1,4 +1,6 @@
 #include "WPILib.h"
+#include "math.h"
+
 
 /**
  * This is a demo program showing the use of the RobotBase class.
@@ -18,7 +20,7 @@ class RobotDemo : public SimpleRobot //DECLARING
 	int piston_position; // 0 down, 1 up
 	DigitalInput *digimon; // Digitial Input 
 	Encoder *encoder;
-	Task *myTask;
+	Task *cameraTask;
 
 public:
 	RobotDemo(void) //CREATING
@@ -41,11 +43,10 @@ public:
 		SmartDashboard::init();
 		SmartDashboard::Log("initializing...", "System State");
 
-		
 		//camera->WriteBrightness(0);
-		
-		myTask = new Task("Camerastuff",(FUNCPTR)&Camerastuff);
-		
+
+		cameraTask = new Task("Camerastuff",(FUNCPTR)&Camerastuff);
+
 		Wait(3.0);
 	}
 
@@ -63,55 +64,74 @@ public:
 	}
 
 	
-	static void Camerastuff()
-	{
+	static void Camerastuff(UINT32 myRobot_p) {
+		RobotDrive *myRobot=(RobotDrive *)myRobot_p;
 		AxisCamera *camera; //Cameralol (: 
 		HSLImage *hslimage;
 		vector<ParticleAnalysisReport>* pars;
 		Threshold tapeThreshold(43, 44, 250, 255, 96, 255);
 		BinaryImage *tapePixels;
 		ParticleAnalysisReport par;
-		
+
 		camera = &AxisCamera::GetInstance();
 		camera->WriteResolution(AxisCameraParams::kResolution_160x120);
-		
-		while (1)
-		{
-			
-		hslimage = camera->GetImage();
 
-		tapePixels = hslimage->ThresholdHSL(tapeThreshold);
-		pars = tapePixels->GetOrderedParticleAnalysisReports();
-		if (pars->size() > 0)
-		{
-			par = (*pars)[0];
-			SmartDashboard::Log(par.center_mass_x, "center of mass x");
-			SmartDashboard::Log(par.center_mass_y, "center of mass y");
-		}
+		while (1) {
+
+			hslimage = camera->GetImage();
+
+			tapePixels = hslimage->ThresholdHSL(tapeThreshold);
+			pars = tapePixels->GetOrderedParticleAnalysisReports();
+			if (pars->size() > 0) {
+				par = (*pars)[0];
+				SmartDashboard::Log(par.center_mass_x, "center of mass x");
+				SmartDashboard::Log(par.center_mass_y, "center of mass y");
+			}
+
+			if (pars->size() > 0) {
+				double closest_x_val = (*pars)[0].center_mass_x_normalized;
+				for (unsigned int i=0; i<pars->size(); i++) {
+					par = (*pars)[i];
+					if (fabs(par.center_mass_x_normalized)
+							< fabs(closest_x_val) && par.particleToImagePercent
+							> 0.0001) {
+						closest_x_val = par.center_mass_x_normalized;
+					}
+				}
+				if (closest_x_val > 0) {
+					//we're too far to the left (anti-clockwise)
+			//		myRobot->MecanumDrive_Polar(0.5, 0, 0.2);//speed, direction (degrees), rotation (-1..1)
+					SmartDashboard::Log("which way", "right");
+				} else if (closest_x_val < 0) {
+					//too far right (clockwise)
+					SmartDashboard::Log("which way", "left");
+			//		myRobot->MecanumDrive_Polar(0.5, 0, -0.2);
+					
+				} else {
+					SmartDashboard::Log("which way", "straight");
+					//uh, we're already centered
+				}
+			}
 			pars->clear();
 			delete pars;
-					
+
 			delete tapePixels;
 			delete hslimage;
 		}
 
 	}
-	
-	
+
 	/**
 	 * Runs the motors with arcade steering. 
 	 */
 	void OperatorControl(void) {
 		SmartDashboard::Log("Teleoperated", "System State");
 		myRobot->SetSafetyEnabled(true);
-		
-		
-		myTask->Start();
 
-		while (IsOperatorControl()) 
-		{
+		cameraTask->Start((UINT32)myRobot);
 
-			
+		while (IsOperatorControl()) {
+
 			//myRobot->TankDrive(leftstick, rightstick);
 			myRobot->MecanumDrive_Polar(rightstick->GetMagnitude(),
 					rightstick->GetDirectionDegrees(), leftstick->GetX());
@@ -152,7 +172,7 @@ public:
 				//SmartDashboard::Log("0", "DigitalLight");
 			}
 			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");
-		} 
+		}
 
 	}
 
