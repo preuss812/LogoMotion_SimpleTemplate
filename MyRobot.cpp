@@ -101,14 +101,14 @@ public:
 				if (closest_x_val > 0) {
 					//we're too far to the left (anti-clockwise)
 			//		myRobot->MecanumDrive_Polar(0.5, 0, 0.2);//speed, direction (degrees), rotation (-1..1)
-					SmartDashboard::Log("which way", "right");
+					SmartDashboard::Log("right", "which way");
 				} else if (closest_x_val < 0) {
 					//too far right (clockwise)
-					SmartDashboard::Log("which way", "left");
+					SmartDashboard::Log("left", "which way");
 			//		myRobot->MecanumDrive_Polar(0.5, 0, -0.2);
 					
 				} else {
-					SmartDashboard::Log("which way", "straight");
+					SmartDashboard::Log("straight", "which way");
 					//uh, we're already centered
 				}
 			}
