@@ -13,14 +13,15 @@ class RobotDemo : public SimpleRobot //DECLARING
 	RobotDrive *myRobot; // robot drive system
 	Joystick *leftstick; // only joystick
 	Joystick *rightstick; // only joystick
+	//Joystick *armstick;
 	Relay *k_relay; // only relay
 	Compressor *C1; // Compressor
-	Solenoid *soy[2]; //sauce 
+	Solenoid *soy[2]; //safuce 
 
 	int piston_position; // 0 down, 1 up
-	DigitalInput *digimon; // Digitial Input 
-	Encoder *encoder;
-	Task *cameraTask;
+	//DigitalInput *digimon; // Digitial Input 
+	//Encoder *encoder;
+	//Task *cameraTask;
 
 public:
 	RobotDemo(void) //CREATING
@@ -28,13 +29,14 @@ public:
 		myRobot = new RobotDrive(1, 3, 2, 4);// these must be initialized in the same order
 		leftstick = new Joystick(1); // as they are declared above.
 		rightstick = new Joystick(2); // as they are declared above.
+		//armstick = new Joystick(3);
 		k_relay = new Relay(2,Relay::kForwardOnly);
 		C1 = new Compressor(4,2);
 		soy[0]= new Solenoid(1);
 		soy[1]= new Solenoid(4);
 		piston_position = 0;
-		digimon = new DigitalInput(4, 12);
-		encoder = new Encoder(4,1,4,2,true);
+		//digimon = new DigitalInput(4, 12);
+		//encoder = new Encoder(4,1,4,2,true);
 
 		myRobot->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);
 		myRobot->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
@@ -45,7 +47,7 @@ public:
 
 		//camera->WriteBrightness(0);
 
-		cameraTask = new Task("Camerastuff",(FUNCPTR)&Camerastuff);
+		//cameraTask = new Task("Camerastuff",(FUNCPTR)&Camerastuff);
 
 		Wait(3.0);
 	}
@@ -64,8 +66,7 @@ public:
 	}
 
 	
-	static void Camerastuff(UINT32 myRobot_p) {
-		RobotDrive *myRobot=(RobotDrive *)myRobot_p;
+	static void Camerastuff() {
 		AxisCamera *camera; //Cameralol (: 
 		HSLImage *hslimage;
 		vector<ParticleAnalysisReport>* pars;
@@ -128,7 +129,7 @@ public:
 		SmartDashboard::Log("Teleoperated", "System State");
 		myRobot->SetSafetyEnabled(true);
 
-		cameraTask->Start((UINT32)myRobot);
+		//cameraTask->Start((UINT32)myRobot);
 
 		while (IsOperatorControl()) {
 
@@ -138,17 +139,32 @@ public:
 			//	myRobot.ArcadeDrive(stick); // drive with arcade style (use right stick)
 			Wait(0.005); // wait for a motor update time
 
-			if (leftstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
+		
+			/*if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
 			{
-				//SmartDashboard::Log("Yes", "Trigger Pressed");
+				SmartDashboard::Log("Yes", "Trigger Pressed");
 				//k_relay->Set(Relay::kOn);
 
 			} else {
-				//SmartDashboard::Log("No", "Trigger Pressed");
+				SmartDashboard::Log("No", "Trigger Pressed");
 				//k_relay->Set(Relay::kOff);
-			}
+			}*/
 
-			DriverStationEnhancedIO &controller_box =
+			/*if (armstick->GetBumper()) //Tells us if the trigger is being pressed on the leftstick
+			{
+				SmartDashboard::Log("Yes", "hat Pressed");
+				//k_relay->Set(Relay::kOn);
+
+			} else {
+				SmartDashboard::Log("No", "hat Pressed");
+				//k_relay->Set(Relay::kOff);
+			}*/
+			/*SmartDashboard::Log( armstick->GetX(), "Armstick X");
+			SmartDashboard::Log( armstick->GetY(), "Armstick Y");
+			SmartDashboard::Log( armstick->GetZ(), "Armstick Z");
+		*/
+			
+			/*DriverStationEnhancedIO &controller_box =
 					DriverStation::GetInstance()->GetEnhancedIO();
 			if (controller_box.GetDigital(3)) {
 				C1-> Start();
@@ -164,14 +180,14 @@ public:
 			} else {
 				piston_down();
 				//makes piston go down down down down down 
-			}
+			}*/
 
-			if (digimon->Get() == 1) {
+			/*if (digimon->Get() == 1) {
 				//SmartDashboard::Log("1", "DigitalLight");
 			} else {
 				//SmartDashboard::Log("0", "DigitalLight");
 			}
-			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");
+			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");*/
 		}
 
 	}
@@ -201,7 +217,7 @@ public:
 
 };
 
-//this is a test
+
 
 
 START_ROBOT_CLASS(RobotDemo)
