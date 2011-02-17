@@ -1,6 +1,18 @@
 #include "WPILib.h"
 #include "math.h"
 
+/*
+ * relay
+ * 1 grabber pneumatic
+ * 2 deploy minibot
+ * 
+ * jaguar speed controller pwm
+ * 5 forklift
+ * 6 rotate grabber up and down
+ * 
+ * ????????????????????????
+ *  ?7 compressor on a spike?
+ */
 
 /**
  * This is a demo program showing the use of the RobotBase class.
@@ -13,10 +25,12 @@ class RobotDemo : public SimpleRobot //DECLARING
 	RobotDrive *myRobot; // robot drive system
 	Joystick *leftstick; // only joystick
 	Joystick *rightstick; // only joystick
-	//Joystick *armstick;
+	Joystick *armstick;
 	Relay *k_relay; // only relay
 	Compressor *C1; // Compressor
-	Solenoid *soy[2]; //safuce 
+	Solenoid *soy[2]; //sauce 
+	Jaguar *forkliftjag; //jag for forklift
+	Jaguar *flexjag;//jag for flexing the grabber arm hand
 
 	int piston_position; // 0 down, 1 up
 	//DigitalInput *digimon; // Digitial Input 
@@ -29,12 +43,14 @@ public:
 		myRobot = new RobotDrive(1, 3, 2, 4);// these must be initialized in the same order
 		leftstick = new Joystick(1); // as they are declared above.
 		rightstick = new Joystick(2); // as they are declared above.
-		//armstick = new Joystick(3);
+		armstick = new Joystick(3);
 		k_relay = new Relay(2,Relay::kForwardOnly);
 		C1 = new Compressor(4,2);
 		soy[0]= new Solenoid(1);
 		soy[1]= new Solenoid(4);
 		piston_position = 0;
+		forkliftjag = new Jaguar(5);
+		flexjag = new Jaguar(6);
 		//digimon = new DigitalInput(4, 12);
 		//encoder = new Encoder(4,1,4,2,true);
 
@@ -140,7 +156,7 @@ public:
 			Wait(0.005); // wait for a motor update time
 
 		
-			/*if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
+			if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
 			{
 				SmartDashboard::Log("Yes", "Trigger Pressed");
 				//k_relay->Set(Relay::kOn);
@@ -148,9 +164,9 @@ public:
 			} else {
 				SmartDashboard::Log("No", "Trigger Pressed");
 				//k_relay->Set(Relay::kOff);
-			}*/
+			}
 
-			/*if (armstick->GetBumper()) //Tells us if the trigger is being pressed on the leftstick
+			if (armstick->GetTop()) //Tells us if the trigger is being pressed on the leftstick
 			{
 				SmartDashboard::Log("Yes", "hat Pressed");
 				//k_relay->Set(Relay::kOn);
@@ -158,11 +174,24 @@ public:
 			} else {
 				SmartDashboard::Log("No", "hat Pressed");
 				//k_relay->Set(Relay::kOff);
-			}*/
-			/*SmartDashboard::Log( armstick->GetX(), "Armstick X");
+			}
+			
+			SmartDashboard::Log( armstick->GetX(), "Armstick X");
 			SmartDashboard::Log( armstick->GetY(), "Armstick Y");
 			SmartDashboard::Log( armstick->GetZ(), "Armstick Z");
-		*/
+			
+			forkliftjag->Set(0);
+			flexjag->Set(0);
+			
+			if(fabs(armstick->GetY()) > 0.5)
+			{
+				forkliftjag->Set(armstick->GetY()/2.0);
+			}
+			
+			if(fabs(armstick->GetX()) > 0.5)
+			{
+				flexjag->Set(armstick->GetX()/2.0);
+			}
 			
 			/*DriverStationEnhancedIO &controller_box =
 					DriverStation::GetInstance()->GetEnhancedIO();
