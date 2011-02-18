@@ -14,7 +14,7 @@
  * Minibot Deployment - Spike - 
  * Compressor - Spike - 
  * Compressor PSI switch - Digitial IO X
-*/
+ */
 
 /**
  * This is a demo program showing the use of the RobotBase class.
@@ -79,7 +79,6 @@ public:
 
 	}
 
-	
 	static void Camerastuff() {
 		AxisCamera *camera; //Cameralol (: 
 		HSLImage *hslimage;
@@ -115,13 +114,13 @@ public:
 				}
 				if (closest_x_val > 0) {
 					//we're too far to the left (anti-clockwise)
-			//		myRobot->MecanumDrive_Polar(0.5, 0, 0.2);//speed, direction (degrees), rotation (-1..1)
+					//		myRobot->MecanumDrive_Polar(0.5, 0, 0.2);//speed, direction (degrees), rotation (-1..1)
 					SmartDashboard::Log("right", "which way");
 				} else if (closest_x_val < 0) {
 					//too far right (clockwise)
 					SmartDashboard::Log("left", "which way");
-			//		myRobot->MecanumDrive_Polar(0.5, 0, -0.2);
-					
+					//		myRobot->MecanumDrive_Polar(0.5, 0, -0.2);
+
 				} else {
 					SmartDashboard::Log("straight", "which way");
 					//uh, we're already centered
@@ -153,7 +152,7 @@ public:
 			//	myRobot.ArcadeDrive(stick); // drive with arcade style (use right stick)
 			Wait(0.005); // wait for a motor update time
 
-		
+
 			if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
 			{
 				SmartDashboard::Log("Yes", "Trigger Pressed");
@@ -173,21 +172,19 @@ public:
 				SmartDashboard::Log("No", "hat Pressed");
 				//k_relay->Set(Relay::kOff);
 			}
-			
-			SmartDashboard::Log( armstick->GetX(), "Armstick X");
-			SmartDashboard::Log( armstick->GetY(), "Armstick Y");
-			SmartDashboard::Log( armstick->GetZ(), "Armstick Z");
-			
+
+			SmartDashboard::Log(armstick->GetX(), "Armstick X");
+			SmartDashboard::Log(armstick->GetY(), "Armstick Y");
+			SmartDashboard::Log(armstick->GetZ(), "Armstick Z");
+
 			forkliftjag->Set(0);
 			flexjag->Set(0);
-			
-			if(fabs(armstick->GetY()) > 0.5)
-			{
+
+			if (fabs(armstick->GetY()) > 0.5) {
 				forkliftjag->Set(armstick->GetY()/2.0);
 			}
-			
-			if(fabs(armstick->GetX()) > 0.5)
-			{
+
+			if (fabs(armstick->GetX()) > 0.5) {
 				flexjag->Set(armstick->GetX()/2.0);
 			}
 
@@ -195,21 +192,21 @@ public:
 					DriverStation::GetInstance()->GetEnhancedIO();
 			if (controller_box.GetDigital(3)) {
 				compressor->Start();
-				SmartDashboard::Log( "ON", "compressor");
+				SmartDashboard::Log("ON", "compressor");
 				//starts compressor when switch 3 flicked
 			} else {
 				compressor->Stop();
-				SmartDashboard::Log( "OFF", "compressor");
+				SmartDashboard::Log("OFF", "compressor");
 			}
 
 			if (controller_box.GetDigital(4)) //4 is the Solenoid switcherrooo thinggyyy 
 			{
 				piston_up();
-				SmartDashboard::Log( "UP", "piston");
+				SmartDashboard::Log("UP", "piston");
 				//makes piston go upp
 			} else {
 				piston_down();
-				SmartDashboard::Log( "DOWN", "piston");
+				SmartDashboard::Log("DOWN", "piston");
 				//makes piston go down down down down down 
 			}
 
@@ -241,9 +238,6 @@ public:
 	}
 
 };
-
-
-
 
 START_ROBOT_CLASS(RobotDemo)
 ;
