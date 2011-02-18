@@ -2,17 +2,19 @@
 #include "math.h"
 
 /*
- * relay
- * 1 grabber pneumatic
- * 2 deploy minibot
- * 
- * jaguar speed controller pwm
- * 5 forklift
- * 6 rotate grabber up and down
- * 
- * ????????????????????????
- *  ?7 compressor on a spike?
- */
+ * Drive Motor 1 (FL) - Jaguar - PWM 1
+ * Drive Motor 2 (FR) - Jaguar - PWM 2
+ * Drive Motor 3 (RL) - Jaguar - PWM 3
+ * Drive Motor 4 (RR) - Jaguar - PWM 4
+
+ * Lift Motor - Jaguar - PWM 5
+ * Arm Rotation - 2 Jaguar - PWM 6 split
+
+ * Arm Pneumatics - 2 Relays - 
+ * Minibot Deployment - Spike - 
+ * Compressor - Spike - 
+ * Compressor PSI switch - Digitial IO X
+*/
 
 /**
  * This is a demo program showing the use of the RobotBase class.
@@ -27,14 +29,12 @@ class RobotDemo : public SimpleRobot //DECLARING
 	Joystick *rightstick; // only joystick
 	Joystick *armstick;
 	Relay *k_relay; // only relay
-	Compressor *C1; // Compressor
+	Compressor *compressor; // Compressor
 	Solenoid *soy[2]; //sauce 
 	Jaguar *forkliftjag; //jag for forklift
 	Jaguar *flexjag;//jag for flexing the grabber arm hand
 
 	int piston_position; // 0 down, 1 up
-	//DigitalInput *digimon; // Digitial Input 
-	//Encoder *encoder;
 	//Task *cameraTask;
 
 public:
@@ -45,14 +45,12 @@ public:
 		rightstick = new Joystick(2); // as they are declared above.
 		armstick = new Joystick(3);
 		k_relay = new Relay(2,Relay::kForwardOnly);
-		C1 = new Compressor(4,2);
+		compressor = new Compressor(4,2);
 		soy[0]= new Solenoid(1);
 		soy[1]= new Solenoid(4);
 		piston_position = 0;
 		forkliftjag = new Jaguar(5);
 		flexjag = new Jaguar(6);
-		//digimon = new DigitalInput(4, 12);
-		//encoder = new Encoder(4,1,4,2,true);
 
 		myRobot->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);
 		myRobot->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
@@ -192,31 +190,29 @@ public:
 			{
 				flexjag->Set(armstick->GetX()/2.0);
 			}
-			
-			/*DriverStationEnhancedIO &controller_box =
+
+			DriverStationEnhancedIO &controller_box =
 					DriverStation::GetInstance()->GetEnhancedIO();
 			if (controller_box.GetDigital(3)) {
-				C1-> Start();
+				compressor->Start();
+				SmartDashboard::Log( "ON", "compressor");
 				//starts compressor when switch 3 flicked
 			} else {
-				C1-> Stop();
+				compressor->Stop();
+				SmartDashboard::Log( "OFF", "compressor");
 			}
 
 			if (controller_box.GetDigital(4)) //4 is the Solenoid switcherrooo thinggyyy 
 			{
 				piston_up();
+				SmartDashboard::Log( "UP", "piston");
 				//makes piston go upp
 			} else {
 				piston_down();
+				SmartDashboard::Log( "DOWN", "piston");
 				//makes piston go down down down down down 
-			}*/
-
-			/*if (digimon->Get() == 1) {
-				//SmartDashboard::Log("1", "DigitalLight");
-			} else {
-				//SmartDashboard::Log("0", "DigitalLight");
 			}
-			SmartDashboard::Log(encoder->GetRaw(), "EncoderValue");*/
+
 		}
 
 	}
