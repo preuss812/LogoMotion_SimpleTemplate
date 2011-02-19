@@ -30,25 +30,28 @@ class RobotDemo : public SimpleRobot //DECLARING
 	Joystick *armstick;
 	Relay *k_relay; // only relay
 	Compressor *compressor; // Compressor
-	Solenoid *soy[2]; //sauce 
+	Solenoid *soy[2]; //sauce  
 	Jaguar *forkliftjag; //jag for forklift
 	Jaguar *flexjag;//jag for flexing the grabber arm hand
 
-	int piston_position; // 0 down, 1 up
+	int piston_position; // 0 down, 1 up TOOOO DDDOOOOO!!!!!! CHANGE TO GRAB AND RELEASE
+	int grab_position; // 0 means up and 1 means down
 	//Task *cameraTask;
 
+	
 public:
 	RobotDemo(void) //CREATING
 	{
-		myRobot = new RobotDrive(1, 3, 2, 4);// these must be initialized in the same order
+		myRobot = new RobotDrive(1, 3, 2, 4);// these must be initialized in the same order FL, RL, FR, RR
 		leftstick = new Joystick(1); // as they are declared above.
 		rightstick = new Joystick(2); // as they are declared above.
 		armstick = new Joystick(3);
 		k_relay = new Relay(2,Relay::kForwardOnly);
-		compressor = new Compressor(4,2);
-		soy[0]= new Solenoid(1);
-		soy[1]= new Solenoid(4);
+		compressor = new Compressor(1,1);//Digital IO 1, Relay 1
+		soy[0]= new Solenoid(1);//solenoid to open to open the jaws
+		soy[1]= new Solenoid(2);//solenoid to open to close the jaws
 		piston_position = 0;
+		grab_position = 0;
 		forkliftjag = new Jaguar(5);
 		flexjag = new Jaguar(6);
 
@@ -69,17 +72,32 @@ public:
 	/**
 	 * Drive left & right motors for 1 seconds then stop
 	 */
-	void Autonomous(void) {
+	void Autonomous(void)
+	{
 		SmartDashboard::Log("Autonomous", "System State");
 		myRobot->SetSafetyEnabled(false);
 		//myRobot->Drive(0.1, 0.0); 	// drive forwards tenth speed
 		Wait(1.0); //    for 1 seconds
 		//myRobot->Drive(0.0, 0.0); 	// stop robot
-
-
 	}
-
-	static void Camerastuff() {
+	
+	static void flex_up(UINT32 _flex_jag)
+	{
+		Jaguar *flex_jag=(Jaguar*)_flex_jag;
+		flex_jag->Set(0.25);
+		Wait(1.0);
+	}
+	
+	static void flex_down(UINT32 _flex_jag)
+	{
+		Jaguar *flex_jag=(Jaguar*)_flex_jag;
+		flex_jag->Set(-0.25);
+		Wait(1.0);
+	}
+	
+	
+	static void Camerastuff() 
+	{
 		AxisCamera *camera; //Cameralol (: 
 		HSLImage *hslimage;
 		vector<ParticleAnalysisReport>* pars;
@@ -153,7 +171,7 @@ public:
 			Wait(0.005); // wait for a motor update time
 
 
-			if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the leftstick
+			if (armstick->GetRawButton(1)) //Tells us if the trigger is being pressed on the armstick
 			{
 				SmartDashboard::Log("Yes", "Trigger Pressed");
 				//k_relay->Set(Relay::kOn);
@@ -163,13 +181,13 @@ public:
 				//k_relay->Set(Relay::kOff);
 			}
 
-			if (armstick->GetTop()) //Tells us if the trigger is being pressed on the leftstick
+			if (armstick->GetTop()) //Tells us if the top button is being pressed on the armstick
 			{
-				SmartDashboard::Log("Yes", "hat Pressed");
+				SmartDashboard::Log("Yes", "Top Pressed");
 				//k_relay->Set(Relay::kOn);
 
 			} else {
-				SmartDashboard::Log("No", "hat Pressed");
+				SmartDashboard::Log("No", "Top Pressed");
 				//k_relay->Set(Relay::kOff);
 			}
 
@@ -177,15 +195,19 @@ public:
 			SmartDashboard::Log(armstick->GetY(), "Armstick Y");
 			SmartDashboard::Log(armstick->GetZ(), "Armstick Z");
 
-			forkliftjag->Set(0);
-			flexjag->Set(0);
+			
+			
 
 			if (fabs(armstick->GetY()) > 0.5) {
-				forkliftjag->Set(armstick->GetY()/2.0);
+				forkliftjag->Set(armstick->GetY()/-2.0); //reverse, so pulling the stick back goes up
+			}else{
+				forkliftjag->Set(0);
 			}
 
-			if (fabs(armstick->GetX()) > 0.5) {
+			if (fabs(armstick->GetX()) > 0.5) { //Left goes up, right goes down
 				flexjag->Set(armstick->GetX()/2.0);
+			}else{
+				flexjag->Set(0);
 			}
 
 			DriverStationEnhancedIO &controller_box =
@@ -199,22 +221,26 @@ public:
 				SmartDashboard::Log("OFF", "compressor");
 			}
 
-			if (controller_box.GetDigital(4)) //4 is the Solenoid switcherrooo thinggyyy 
+			if (armstick->GetTrigger()) //4 is the Solenoid switcherrooo thinggyyy 
 			{
-				piston_up();
-				SmartDashboard::Log("UP", "piston");
-				//makes piston go upp
-			} else {
-				piston_down();
-				SmartDashboard::Log("DOWN", "piston");
+				hand_grab();
+				SmartDashboard::Log("Grab", "Hand");
+				//makes piston go up
+			} 
+			if(armstick->GetTop()){
+				hand_release();
+				SmartDashboard::Log("Release", "Hand");
 				//makes piston go down down down down down 
 			}
+			
 
 		}
 
 	}
 
-	void piston_up(void) {
+	
+	void hand_grab(void) 
+	{
 		if (piston_position == 0) {
 			soy[0]->Set(true);
 			soy[1]->Set(false);
@@ -225,7 +251,8 @@ public:
 		}
 	}
 
-	void piston_down(void) {
+	void hand_release(void) 
+	{
 		if (piston_position == 1) {
 			soy[0]->Set(false);
 			soy[1]->Set(true);
